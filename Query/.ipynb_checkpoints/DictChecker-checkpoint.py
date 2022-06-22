@@ -2,8 +2,8 @@ import pandas as pd
 
 #Returns a dictionary with the ids that were found and the ids that weren't found
 def check(edges_table, queries_id):
-    sources = edges_table["source_id"].tolist()
-    targets = edges_table["target_id"].tolist()
+    sources = edges_table["source"].tolist()
+    targets = edges_table["target"].tolist()
 
     all_species = list(set(sources + targets))
     not_in=[]

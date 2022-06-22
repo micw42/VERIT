@@ -198,7 +198,8 @@ function toggle(elem) {
 
 
 
-                {% for id, id_dict in result_dict.items() %}   
+                {% for id, id_dict in result_dict.items() %}
+                    {% if id != "max_PR" %}  
                   <tr>
                        <form method="POST" action="#" style="height:100%;width:100%">
                             <td>
@@ -239,10 +240,11 @@ function toggle(elem) {
   </div>
                         
                     {% endif %}
+                        {% endif %}  
                {% endfor %}        
 
 {% endif %}
-                        
+                       
 
     </div>
 </div>

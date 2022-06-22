@@ -19,15 +19,15 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 start = time.time()
 
 print("Reading edges...", end="\x1b[1K\r")
-edges_df=pd.read_pickle("./pickles/edges_table.pkl")
+edges_df=pd.read_pickle("./pickles/new_edges.pkl")
 print("Loaded edges.")
 
 print("Reading nodes...", end="\x1b[1K\r")
-nodes_df=pd.read_pickle("./pickles/nodes_table_all_labelled.pkl")
+nodes_df=pd.read_pickle("./pickles/new_nodes.pkl")
 print("Loaded nodes.")
 
 print("Reading evidence...", end="\x1b[1K\r")
-ev_df=pd.read_pickle("./pickles/evidence.pkl")
+ev_df=pd.read_pickle("./pickles/new_evidence.pkl")
 print("Loaded evidence.")
 
 print("Reading databases...", end="\x1b[1K\r")
@@ -36,7 +36,7 @@ print("Loaded databases.")
 
 print(f"{clr.Fore.GREEN}Loaded pickles in {round(time.time() - start, 3)}s.{clr.Style.RESET_ALL}")
 
-G = nx.from_pandas_edgelist(edges_df, edge_attr=True, source="source_id", target="target_id", create_using=nx.DiGraph())
+G = nx.from_pandas_edgelist(edges_df, edge_attr=True, source="source", target="target", create_using=nx.DiGraph())
 
 @app.route('/')
 def home():

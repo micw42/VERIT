@@ -121,10 +121,11 @@
                 <h3 style="padding-left:10px">Click on connections between nodes to see the evidence for that connection.</h3>
         <h3 style="padding-left:10px">Mouseover nodes to see only the nodes that the node directly targets.</h3>
             
-            <h3 style="padding-left:10px">Experimental: Color-code the edges by type</h3>
-        <h5 style="padding-left:10px">The NLP algorithm can also detect the type of relationship between two nodes (eg. positive or negative regulation). However, it does not do so perfectly. Use the button below to color code the edges based on type of relationship that REACH detected. Bluer edges represent positive regulation, red ones represent negative regulation, and white ones represent uncertainty. For more information on the color-coding, please see the README.</h5>
+            <h3 style="padding-left:10px">Experimental: Color-code the edges by interaction type</h3>
+        <h5 style="padding-left:10px">The NLP algorithm can also detect the type of relationship between two nodes (eg. positive or negative regulation). However, it does not do so perfectly. Use the button below to view different interaction types. Darker edges mean higher confidence. For more information on the color-coding, please see the README.</h5>
         <div style="padding-left:10px">
-        <button id = "add_color" onclick = "add_colors()" class="btn btn-primary" style="background-color:#4CAF50;padding-left:10px">Show Color</button>
+        <button id = "color-button" onclick = "switch_color()" class="btn btn-primary" style="background-color:#4CAF50;padding-left:10px">Change Color</button>
+            <p id = "current-color" >Current: None</p>
         </div>
     </div>
     <script>
@@ -226,9 +227,19 @@
                     style:{ 'opacity': '.1' }
                 },
                     {
-                    selector: 'edge.colors',
-                    style:{ 'line-color':"data(color)",
-                          'target-arrow-color':"data(color)"}
+                    selector: 'edge.pos_colors',
+                    style:{ 'line-color':"data(pos_color)",
+                          'target-arrow-color':"data(pos_color)"}
+                },
+                    {
+                    selector: 'edge.neg_colors',
+                    style:{ 'line-color':"data(neg_color)",
+                          'target-arrow-color':"data(neg_color)"}
+                },
+                    {
+                    selector: 'edge.inc_colors',
+                    style:{ 'line-color':"data(inc_color)",
+                          'target-arrow-color':"data(inc_color)"}
                 }
                 ],
                 layout: {
@@ -424,6 +435,25 @@ layout.run();
           } else {
             x.innerHTML = "Show Color";
               cy.edges().removeClass("colors");
+          }
+        }
+        
+        function switch_color() {
+          var x = document.getElementById("current-color");
+          if (x.innerHTML === "Current: Positive interactions") {
+            x.innerHTML = "Current: Negative interactions";
+              cy.edges().removeClass("pos_colors");
+              cy.edges().addClass("neg_colors");
+          } else if (x.innerHTML=="Current: Negative interactions") {
+            x.innerHTML = "Current: Inconclusive interactions";
+              cy.edges().removeClass("neg_colors");
+              cy.edges().addClass("inc_colors");
+          } else if (x.innerHTML == "Current: Inconclusive interactions") {
+              x.innerHTML = "Current: None";
+              cy.edges().removeClass("inc_colors");
+          } else {
+              x.innerHTML = "Current: Positive interactions";
+              cy.edges().addClass("pos_colors");
           }
         }
     </script>

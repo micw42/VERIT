@@ -4,8 +4,8 @@ def single_convert():
     results=pd.read_csv("singleSearchOut.csv")
     ids=results["id"].tolist()
     names=results["name"].tolist()
-    pr_vals = results["PRValue"].tolist()
-    
+    pr_vals = results["PR"].tolist()
+    print("PR vals:", pr_vals)
     result_dict={}
     for i in range(len(ids)):
         if ids[i] not in result_dict:
@@ -22,7 +22,7 @@ def multi_convert():
     
     ids=results["id"].tolist()
     names=results["name"].tolist()
-    pr_vals = results["PRValue"].tolist()
+    pr_vals = results["PR"].tolist()
     queries=results["user_query"].tolist()
     query_display=results["user_query"].tolist()  #The name to display, but not use as a key, b/c flask doesn't like spaces in request.form[]
 
