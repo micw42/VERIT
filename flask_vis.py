@@ -19,19 +19,19 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 start = time.time()
 
 print("Reading edges...", end="\x1b[1K\r")
-edges_df=pd.read_pickle("./pickles/new_edges.pkl")
+edges_df=pd.read_pickle("./new_pickles/edges.pkl")
 print("Loaded edges.")
 
 print("Reading nodes...", end="\x1b[1K\r")
-nodes_df=pd.read_pickle("./pickles/new_nodes.pkl")
+nodes_df=pd.read_pickle("./new_pickles/nodes.pkl")
 print("Loaded nodes.")
 
 print("Reading evidence...", end="\x1b[1K\r")
-ev_df=pd.read_pickle("./pickles/new_evidence.pkl")
+ev_df=pd.read_pickle("./new_pickles/evidence.pkl")
 print("Loaded evidence.")
 
 print("Reading databases...", end="\x1b[1K\r")
-full_df=pd.read_pickle("./pickles/combinedDBs.pkl")
+full_df=pd.read_pickle("./new_pickles/combinedDBs.pkl")
 print("Loaded databases.")
 
 print(f"{clr.Fore.GREEN}Loaded pickles in {round(time.time() - start, 3)}s.{clr.Style.RESET_ALL}")
@@ -249,13 +249,7 @@ def make_bfs_query(query, query_type):
         query_string=query
         max_linkers=int(request.form["max_linkers"])
         qtype = request.form["qtype"]
-        get_direct_linkers = request.form.get('get_direct_linkers')
-        if get_direct_linkers:
-            get_direct_linkers = True
-        else:
-            get_direct_linkers = False
-        print("get direct linkers", get_direct_linkers)
-        return redirect(url_for("bfs_query_result",query_string=query_string, max_linkers=max_linkers, qtype = qtype, query_type = query_type, get_direct_linkers = get_direct_linkers))
+        return redirect(url_for("bfs_query_result",query_string=query_string, max_linkers=max_linkers, qtype = qtype, query_type = query_type, get_direct_linkers = True))
     else:
         return render_template("bfs_search.html", query=query)
 

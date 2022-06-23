@@ -88,36 +88,38 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
     nodes = list(set(nodes))
     nodes = pd.DataFrame({"Id": nodes})
     nodes = nodes.merge(nodes_df, on="Id", how="inner")[["Id", "Label"]]
-    nodes = nodes.merge(db_df, left_on="Id", right_on="id", how="left")
-    syn_concat = lambda x: "%%".join(x)
-    aggregation_functions = {'Id': 'first', 'Label':"first", "name":syn_concat}
-    nodes = nodes.groupby('id').aggregate(aggregation_functions)
-    nodes.to_csv("internodes.csv", index=False)
     
     print("get_direct_linkers recursive", get_direct_linkers)
     found_ids = set(rel_df["source"].tolist()) | set(rel_df["target"].tolist()) - set(query_list)
     if get_direct_linkers:
         print("Getting direct linkers")
-        links = edges_df[((edges_df["source_id"].isin(query_list)) & ~(edges_df["target_id"].isin(found_ids))) | 
-                         ((edges_df["target_id"].isin(query_list)) & ~(edges_df["source_id"].isin(found_ids)))]
-        links = links[links["thickness"] > 5]
+        links = edges_df[((edges_df["source"].isin(query_list)) & ~(edges_df["target"].isin(found_ids))) | 
+                         ((edges_df["target"].isin(query_list)) & ~(edges_df["source"].isin(found_ids)))]
+        links = links[links["thickness"] > 20]  #Filter link thickness so visualization is not too crowded
 
-        targets = links[(links["source_id"].isin(query_list)) & ~(links["target_id"].isin(query_list))]
-        targets = targets[["target", "target_id", "source_id"]]
-        sources = links[(links["target_id"].isin(query_list)) & ~(links["source_id"].isin(query_list))]
-        sources = sources[["source", "source_id", "target_id"]]
-        targets = targets.rename(columns = {"target":"FullName", "target_id":"Only_Id"})
-        sources = sources.rename(columns = {"source":"FullName", "source_id":"Only_Id"})
-        full_nodes = pd.concat([targets, sources]).drop_duplicates(subset = ["Only_Id"])
-        full_nodes = full_nodes.merge(nodes_df, on = "Only_Id", how = "inner")
-        full_nodes = full_nodes[["FullName", "Label", "Only_Id"]]
-        full_nodes = full_nodes.rename(columns = {"Only_Id":"Id"})
+        targets = links[(links["source"].isin(query_list)) & ~(links["target"].isin(query_list))]
+        targets = targets[["target"]]
+        sources = links[(links["target"].isin(query_list)) & ~(links["source"].isin(query_list))]
+        sources = sources[["source"]]
+        sources.to_csv("sources.csv")
+        targets = targets.rename(columns = {"target":"Id"})
+        sources = sources.rename(columns = {"source":"Id"})
+        full_nodes = pd.concat([targets, sources]).drop_duplicates(subset = ["Id"])
+        full_nodes = full_nodes.merge(nodes_df, on = "Id", how = "inner")
+        full_nodes = full_nodes[["Id", "Label"]]
+        full_nodes.to_csv("full_nodes.csv", index=False)
         nodes = pd.concat([nodes, full_nodes])
-
-        links = links.merge(ev_df, on=["source_id", "target_id"], how="left")[["source", "source_id", "target", "target_id", "color_col", "thickness", "evidence"]]
-        links.columns = ["source_lab", "source", "target_lab", "target", "color_col", "thickness", "evidence"]
+        nodes.to_csv("concat_nodes.csv", index=False)
+        links = links.merge(ev_df, on=["source", "target"], how="left")[["source", "target", "pos_color", "neg_color", "inc_color", "thickness", "evidence"]]
         rel_df = pd.concat([rel_df, links]).drop_duplicates(subset = ["source", "target"])
-
+        
+    nodes = nodes.merge(db_df, left_on="Id", right_on="id", how="left")
+    nodes["name"] = nodes["name"].fillna(nodes["Label"])
+    nodes["id"] = nodes["id"].fillna(nodes["Id"])
+    syn_concat = lambda x: "%%".join(x)
+    aggregation_functions = {'Id': 'first', 'Label':"first", "name":syn_concat}
+    nodes = nodes.groupby('id').aggregate(aggregation_functions)
+    nodes.to_csv("internodes.csv", index=False)
     
     #Fix the node labels to account for combined IDs
     if query_type == "name":

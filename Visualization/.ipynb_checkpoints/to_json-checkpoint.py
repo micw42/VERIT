@@ -111,7 +111,6 @@ def convert(nodes_df, edges_df):
         edge_dict={"data":{"id":edge_id, "source":edge[5], "target":edge[6], 
                            "weight":edge[3], "pos_color":edge[0], 
                            "neg_color":edge[1], "inc_color":edge[2], "ev":edge[4]}}
-        print(edge_dict)
         elements.append(edge_dict)
 
 

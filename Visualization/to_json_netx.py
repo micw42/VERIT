@@ -18,16 +18,24 @@ def clean_nodes():
             return "level3"
         else:
             return "level0"
+        
+    def get_display(query_type):
+        if query_type=="Direct":
+            return "none"
+        else:
+            return "element"
     
     nodes_df["Color"] = nodes_df["Type"].apply(get_color)
     nodes_df["class"] = nodes_df["Type"].apply(get_class)
+    nodes_df["display"] = nodes_df["Type"].apply(get_display)
 
     return nodes_df
 
 
     
 def clean_edges():
-
+    nodes_df = pd.read_csv("query_nodes.csv",header = 0)
+    direct_nodes = nodes_df[nodes_df["Type"]=="Direct"]["Id"].tolist()
     edges_df=pd.read_csv("query_edges.csv",header = 0)
     
     def get_width(x):
@@ -68,6 +76,14 @@ def clean_edges():
     edges_df["pos_color"]=edges_df["pos_color"].apply(convert_col, args=(blue_pal,))
     edges_df["neg_color"]=edges_df["neg_color"].apply(convert_col, args=(red_pal,))
     edges_df["inc_color"]=edges_df["inc_color"].apply(convert_col, args=(beige_pal,))
+    
+    def get_display(id1, id2, direct_nodes):
+        if id1 in direct_nodes or id2 in direct_nodes:
+            return "none"
+        else:
+            return "element"
+    
+    edges_df['display'] = edges_df.apply(lambda x: get_display(x.source, x.target, direct_nodes=direct_nodes), axis=1)
 
     return edges_df
 
@@ -121,7 +137,7 @@ def convert(nodes_df, edges_df):
         print(node)
         print("Node syn:", node[2])
         node_dict={"data":{"id":node[0], "label":node[1], "type":node[3], "syn":node[2],
-                           "color":node[4], "classes":node[5]}}
+                           "color":node[4], "classes":node[5], "display":node[6], "orig_display":node[6]}}
         print(node_dict)
         elements.append(node_dict)
 
@@ -135,7 +151,8 @@ def convert(nodes_df, edges_df):
         edge_dict={"data":{"id":edge_id, "source":edge[5], "target":edge[6], 
                            "weight":edge[7], "pos_color":edge[0], 
                            "neg_color":edge[1], "inc_color":edge[2], 
-                           "ev":edge[4], "thickness":edge[1]}}
+                           "ev":edge[4], "display":edge[8], "orig_display":edge[8],
+                          "thickness":edge[3]}}
         elements.append(edge_dict)
 
     return elements
