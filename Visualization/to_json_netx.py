@@ -105,7 +105,6 @@ def get_square_clusters():
         if i%side_len == 0:
             x_coord = 2500
             y_coord += 500
-    print(align)
     return align
 
 
@@ -134,7 +133,6 @@ def convert(nodes_df, edges_df):
 
     elements=[]
     for node in nodes:
-        print("Node syn:", node[2])
         node_dict={"data":{"id":node[0], "label":node[1], "type":node[3], "syn":node[2],
                            "color":node[4], "classes":node[5], "display":node[6], "orig_display":node[6]}}
         elements.append(node_dict)
