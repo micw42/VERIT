@@ -1,9 +1,0 @@
-<!--  <td>
-                         <p>{{ '%0.4f'| format(id_dict.PR|float) }}                        
-                                  {% if id_dict.PR < 0 %}
-                                <span>&#9888;</span>
-                            {% endif %}
-                           </p> 
-
-                           </td> -->
-                       
