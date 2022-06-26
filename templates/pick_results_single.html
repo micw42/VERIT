@@ -208,7 +208,7 @@ function toggle(elem) {
                        <td>
                            {% if id_dict is mapping %}
                          <p>{{ '%0.4f'| format(id_dict["PR"]|float) }}                        
-                                  {% if id_dict["PR"] < 0 %}
+                                  {% if id_dict["PR"] < 0.05 %}
                                 <span>&#9888;</span>
                             {% endif %}
                            </p> 

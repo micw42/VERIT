@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, request, redirect
-from Query import llNetxQuery, DictChecker, BidirectionalSingleQuery, SimpleSingleQuery, singleSearcher, multiSearcher, convertSearch, recursiveNetx, resultRank, CombllNetx, gene_convert
+from Query import DictChecker, SingleQuery, SingleSearcher, MultiSearcher, ConvertSearch, MultiQuery, GeneConvert
 from Visualization import to_json, to_json_netx
 import pandas as pd
 import colorama as clr
@@ -19,19 +19,19 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 start = time.time()
 
 print("Reading edges...", end="\x1b[1K\r")
-edges_df=pd.read_pickle("./new_pickles/edges.pkl")
+edges_df=pd.read_pickle("./abstract_pickles/edges.pkl")
 print("Loaded edges.")
 
 print("Reading nodes...", end="\x1b[1K\r")
-nodes_df=pd.read_pickle("./new_pickles/nodes.pkl")
+nodes_df=pd.read_pickle("./abstract_pickles/nodes.pkl")
 print("Loaded nodes.")
 
 print("Reading evidence...", end="\x1b[1K\r")
-ev_df=pd.read_pickle("./new_pickles/evidence.pkl")
+ev_df=pd.read_pickle("./abstract_pickles/evidence.pkl")
 print("Loaded evidence.")
 
 print("Reading databases...", end="\x1b[1K\r")
-full_df=pd.read_pickle("./new_pickles/combinedDBs.pkl")
+full_df=pd.read_pickle("./abstract_pickles/combinedDBs.pkl")
 print("Loaded databases.")
 
 print(f"{clr.Fore.GREEN}Loaded pickles in {round(time.time() - start, 3)}s.{clr.Style.RESET_ALL}")
@@ -83,7 +83,6 @@ def validate(query_type):
                     query=query.replace(" ","SPACE")
                     query_dict = {"QUERY_ID":query}
                     query_dict = json.dumps(query_dict)
-                    print("QueryDict:", query_dict)
                     return redirect(url_for("display_options", query_type=query_type, query=query_dict, result_dict=result_dict))
                 else:
                     query = ",".join(query)
@@ -94,7 +93,6 @@ def validate(query_type):
             query=request.form["query"].split(",")
             result_dict=DictChecker.check(edges_df, query)
             result_dict = json.dumps(result_dict)
-            print("Result dict:", result_dict)
             query=request.form["query"]
             query_dict = {"QUERY_ID":query}
             query_dict = json.dumps(query_dict)
@@ -111,27 +109,26 @@ def validate(query_type):
                 default_PR = request.form.get("default_PR")
                 if default_PR:
                     query=query.split(",")
-                    multiSearcher.query(query, nodes_df, full_df, string_type)
+                    MultiSearcher.query(query, nodes_df, full_df, string_type)
                     result = pd.read_csv("multiSearchOut.csv")
-                    result_dict=convertSearch.multi_convert()
+                    result_dict=ConvertSearch.multi_convert()
                     query_dict={}
                     for query in result_dict:
                         query_dict[query] = [result_dict[query]["max_PR"]]
                     query_dict = json.dumps(query_dict)
-                    print("QueryDict:", query_dict)
                     return redirect(url_for("make_bfs_query", query=query_dict, query_type = "name"))
                     
             if query_type=="single":
                 if default_PR:
                     print("Default PR")
-                    singleSearcher.query(query, nodes_df, full_df, string_type)
-                    result_dict=convertSearch.single_convert()
+                    SingleSearcher.query(query, nodes_df, full_df, string_type)
+                    result_dict=ConvertSearch.single_convert()
                     query = {"QUERY_ID":result_dict["max_PR"]}
                     query = json.dumps(query)
                     return redirect(url_for("make_single_query", query=query, query_type=query_type))
                 query=request.form["query"]
                 if string_type=="gene":
-                    conv_dict = gene_convert.convert_genes([query])
+                    conv_dict = GeneConvert.convert_genes([query])
                     query = conv_dict[query]
                     query = {"QUERY_ID":query}
                     query = json.dumps(query)
@@ -156,15 +153,15 @@ def pick_query(query_type, query, string_type):
     user_query = user_query.split(",")
     
     if query_type=="single":
-        singleSearcher.query(user_query[0], nodes_df, full_df, string_type)
-        result_dict=convertSearch.single_convert()
+        SingleSearcher.query(user_query[0], nodes_df, full_df, string_type)
+        result_dict=ConvertSearch.single_convert()
         print("Pick query result dict:", result_dict)
        
         
     else:
             #Handles gene ids    
             if string_type == "gene":
-                id_dict = gene_convert.convert_genes(user_query)
+                id_dict = GeneConvert.convert_genes(user_query)
                 conv_genes = list(id_dict.keys())    #the genes that were able to be converted to uniprot id
                 conv_ids = list(id_dict.values())   #converted uniprot ids
                 not_in = list(set(user_query) - set(conv_genes))
@@ -181,10 +178,9 @@ def pick_query(query_type, query, string_type):
             
             #Handles name queries
             else:  
-                multiSearcher.query(user_query, nodes_df, full_df, string_type)
+                MultiSearcher.query(user_query, nodes_df, full_df, string_type)
                 result = pd.read_csv("multiSearchOut.csv")
-                result_dict=convertSearch.multi_convert()
-                print("MultiSearch result dict:", result_dict)
+                result_dict=ConvertSearch.multi_convert()
 
     if request.method=="POST":
         if query_type=="single": 
@@ -211,7 +207,6 @@ def pick_query(query_type, query, string_type):
                 for query in result_dict:
                     query_dict[query] = request.form.getlist(query)
             query_dict = json.dumps(query_dict)
-            print("QueryDict:", query_dict)
             return redirect(url_for("make_bfs_query", query=query_dict, query_type = "name"))
           
     else:
@@ -227,7 +222,6 @@ def pick_query(query_type, query, string_type):
 def display_options(result_dict, query_type, query):
     result_dict = json.loads(result_dict)
     not_in = result_dict["not_in"]
-    print("NotIn:", not_in)
     present = result_dict["present"]
     query_parts=(json.loads(query))["QUERY_ID"].split(",")
    
@@ -277,15 +271,13 @@ def bfs_query_result(query_string, max_linkers, qtype, query_type, get_direct_li
         get_direct_linkers = True
     else:
         get_direct_linkers = False
-    print("Queries Id:", query)
-    recursiveNetx.query(G, edges_df, nodes_df, ev_df, query, max_linkers, qtype, query_type, get_direct_linkers = get_direct_linkers, db_df = full_df)
+    MultiQuery.query(G, edges_df, nodes_df, ev_df, query, max_linkers, qtype, query_type, get_direct_linkers = get_direct_linkers, db_df = full_df)
     no_path_file=open("no_path.txt","r")
     no_path=[line.rstrip("\n") for line in no_path_file]
 
     elements = to_json_netx.clean()
     sq_align = to_json_netx.get_square_clusters()
     orig_align_q, orig_align_l = to_json_netx.get_orig_clusters()
-    print("Done with bfs")
     return render_template("bfs_result.html", no_path=no_path, elements = elements, sq_align = sq_align, orig_align_q = orig_align_q, orig_align_l = orig_align_l)
 
 
@@ -300,7 +292,7 @@ def single_query_result(query, depth, query_type, methods=["GET"]):
     query = json.loads(query)
     depth=int(depth)
 
-    SimpleSingleQuery.query(G, edges_df, nodes_df, ev_df, query, depth)
+    SimpleQuery.query(G, edges_df, nodes_df, ev_df, query, depth)
     elements=to_json.clean()
     return render_template("single_query_result.html", elements=elements)
 

@@ -1,1 +1,16 @@
-new_pickles/*
+abstract_pickles/*
+subset_pickles/*
+*.csv
+no_path.txt
+bin/
+lib/
+pyvenv.cfg
+share/
+Query/__pycache__/*
+.ipynb_checkpoints/*
+Query/.ipynb_checkpoints/*
+*/.ipynb_checkpoints/*
+*/__pycache__/*
+.ipynb_checkpoints/*
+static/cytoscape.js-cise/*
+static/cytoscape.js-cise/

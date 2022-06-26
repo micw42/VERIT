@@ -64,7 +64,7 @@
 <div style="padding-top:65px;" class="container">
         <h1 style="padding-bottom:25px;">README</h1>
     <h2>PageRank Scoring of IDs</h2>
-    <p>To help the user choose an effective query, we rank the ID results of name queries using the PageRank algorithm. The number in parentheses next to each ID is the normalized PageRank score. IDs with high PageRank scores are well-connected to other entities and likely to yield an informative network visualization. IDs with PageRank scores less than 0 have a hazard icon next to them. They are poorly connected to other entities and unlikely to yield an informative network visualization. We suggest not querying with these IDs.</p>
+    <p>To help the user choose an effective query, we rank the ID results of name queries using the PageRank algorithm. The number in parentheses next to each ID is the normalized PageRank score. Please note that this value is calculated from the global graph, not the subset graph found by the query algorithm. IDs with high PageRank scores are well-connected to other entities and likely to yield an informative network visualization. IDs with PageRank scores less than 0.05 have a hazard icon next to them. They are poorly connected to other entities and unlikely to yield an informative network visualization. We suggest not querying with these IDs.</p>
     <figure>
   <img class="d-block w-100" src="{{url_for('static', filename='pr_example.png')}}" style="width:100%; height: 460px;" alt="PageRank Example">
   <figcaption>For a query of E2F, we recommend selecting uniprot:Q01094 because it has the highest PageRank value, instead of the other IDs, which have negative PageRanks values.</figcaption>
