@@ -84,37 +84,68 @@ def clean_edges():
 
 def get_square_clusters():
     nodes_df=pd.read_csv("query_nodes.csv",header = 0)
+    edges_df = pd.read_csv("query_edges.csv", header=0)
+    
     is_query = nodes_df[nodes_df["Type"] == "Query"]["Id"].tolist()
+    is_connected = list(set(edges_df["source"].tolist()) | set(edges_df["target"].tolist()))  #All non-orphans
+    query_orphans = list(set(is_query) - set(is_connected))  # Non-connected query nodes
+    query_conn = list(set(is_query) - set(query_orphans))    # Connected query nodes
+    
     linkers = nodes_df[nodes_df["Type"] == "Linker"]["Id"].tolist()
     direct = nodes_df[nodes_df["Type"] == "Direct"]["Id"].tolist()
-    side_len = int(math.sqrt(len(linkers)))
+    n_linkers = int(math.sqrt(len(linkers)))
+    
+    # Align connected query nodes
     if len(linkers) == 0:
-        align = [{"nodeId": is_query[i], "position": {"x": 1000*(i%2), "y": 1000*(i//2)}} for i in range(len(is_query))]
+        align = [{"nodeId": query_conn[i], "position": {"x": 1000*(i%2), "y": 1000*(i//2)}} for i in range(len(query_conn))]
     else:
-        align = [{"nodeId": is_query[i], "position": {"x": (side_len*500+5000)*(i%2), "y": (side_len)*100*(i//2+1)}} for i in range(len(is_query))]
+        align = [{"nodeId": query_conn[i], "position": {"x": (n_linkers*500+5000)*(i%2), "y": (n_linkers)*100*(i//2+1)}} for i in range(len(query_conn))]
+        
+    # Align linker nodes    
     y_coord = 0
     x_coord = 2500
     for i in range(len(linkers)):
         align.append({"nodeId":linkers[i], "position":{"x":x_coord, "y":y_coord}})
         x_coord += 500
-        if i%side_len == 0:
+        if i%n_linkers == 0:
             x_coord = 2500
             y_coord += 500
+            
+    # Align orphan query nodes
+    y_coord = -500
+    x_coord = -500
+    n_orphans = int(math.sqrt(len(query_orphans)))
+    for i in range(len(query_orphans)):
+        align.append({"nodeId":query_orphans[i], "position":{"x":x_coord, "y":y_coord}})
+        x_coord -= 500
+        if (i+1)%n_orphans == 0:
+            x_coord = -500
+            y_coord -= 500
+            
     return align
 
 
 #original function
 def get_orig_clusters():
     nodes_df=pd.read_csv("query_nodes.csv",header = 0)
+    edges_df = pd.read_csv("query_edges.csv", header=0)
+    
     is_query = nodes_df[nodes_df["Type"] == "Query"]["Id"].tolist()
+    is_connected = list(set(edges_df["source"].tolist()) | set(edges_df["target"].tolist()))  #All non-orphans
+    query_orphans = list(set(is_query) - set(is_connected))  # Non-connected query nodes
+    query_conn = list(set(is_query) - set(query_orphans))    # Connected query nodes
+    
     linkers = nodes_df[nodes_df["Type"] == "Linker"]["Id"].tolist()
     direct = nodes_df[nodes_df["Type"] == "Direct"]["Id"].tolist()
     if len(linkers) == 0:
-        align = [{"nodeId": is_query[i], "position": {"x": 1000*(i%2), "y": 1000*(i//2)}} for i in range(len(is_query))]
+        align = [{"nodeId": query_conn[i], "position": {"x": 1000*(i%2), "y": 1000*(i//2)}} for i in range(len(query_conn))]
     else:
-        align = [{"nodeId": is_query[i], "position": {"x": 10000*(i%2), "y": 10000*(i//2)}} for i in range(len(is_query))]
-    align_linkers_n1 = [{"left": is_query[0], "right": x, "gap": 2500} for x in linkers]
-    align_linkers_n2 = [{"left": x, "right": is_query[1], "gap": 2500} for x in linkers]
+        align = [{"nodeId": query_conn[i], "position": {"x": 10000*(i%2), "y": 10000*(i//2)}} for i in range(len(query_conn))]
+        
+    orph_align = [{"nodeId": query_orphans[i], "position": {"x": (-500-500*(i%2)), "y": -500*(i//2)}} for i in range(len(query_orphans))]
+    align.extend(orph_align)
+    align_linkers_n1 = [{"left": query_conn[0], "right": x, "gap": 2500} for x in linkers]
+    align_linkers_n2 = [{"left": x, "right": query_conn[1], "gap": 2500} for x in linkers]
     align_linkers = align_linkers_n1 + align_linkers_n2
     return (align, align_linkers)   
 

@@ -280,18 +280,15 @@
                 }
             });
         
+        
       cy.on('mouseover', 'node', function(evt){
           var sel = evt.target;
-          console.log(sel.degree());
           sel.addClass('large');
+          console.log(sel.position())
           cy.nodes().difference(sel.outgoers()).not(sel).addClass('semitransp');
           cy.edges().difference(sel.edgesTo(sel.outgoers())).addClass("semitransp");
     });
         
-      cy.on('mouseover', 'node', function(evt){
-          var sel = evt.target;
-          console.log(sel.position());
-    });
         
       cy.on('mouseout', 'node', function(evt){
           var sel = evt.target;
@@ -474,7 +471,7 @@
             var nodes = cy.filter('node');
 
         }
-        
+
         function run_fcose() {
             var layout = cy.layout({
                     name: 'fcose',
@@ -485,7 +482,7 @@
                 layout.run();
         }
         
-        function run_circle() {
+        function run_circle() {      
             var layout = cy.layout({
                      name: 'breadthfirst',
                      grid:true,
@@ -496,7 +493,7 @@
 
                 });
 
-                layout.run();
+                layout.run();    
         }
         
         function run_fcose_orig() {
