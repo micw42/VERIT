@@ -17,3 +17,6 @@ static/cytoscape.js-cise/
 *.ipynb
 abstract_pickles_2/
 Query/MultiQueryTest.py
+sen_core_genes.txt
+ski_species_pickles/
+uploads/

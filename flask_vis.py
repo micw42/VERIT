@@ -13,7 +13,7 @@ from os.path import expanduser
 
 pickle_path = "./pickles/"
 
-UPLOAD_FOLDER = expanduser("~")
+UPLOAD_FOLDER = "uploads/"
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -34,6 +34,7 @@ print("Loaded evidence.")
 
 print("Reading databases...", end="\x1b[1K\r")
 full_df=pd.read_pickle(f"{pickle_path}combinedDBs.pkl")
+
 print("Loaded databases.")
 
 print(f"{clr.Fore.GREEN}Loaded pickles in {round(time.time() - start, 3)}s.{clr.Style.RESET_ALL}")
@@ -72,10 +73,12 @@ def validate(query_type):
             
             #Handles file input
             if file:
-                filename = secure_filename(file.filename)
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                with open(file_path) as file:
-                    file_contents = file.read()
+                #filename = secure_filename(file.filename)
+                #file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                #file.save(file_path)
+                #with open(file_path) as file:
+                #    file_contents = file.read()
+                file_contents = file.read().decode("utf-8") 
                 query = file_contents.splitlines()
                 string_type=request.form["queryType"]
                 if string_type == "id":
