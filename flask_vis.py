@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, request, redirect
-from Query import DictChecker, SingleQuery, SingleSearcher, MultiSearcher, ConvertSearch, MultiQuery, GeneConvert, MultiQueryTest
+from Query import DictChecker, SingleQuery, SingleSearcher, MultiSearcher, ConvertSearch, MultiQuery, GeneConvert
 from Visualization import to_json, to_json_netx
 import pandas as pd
 import colorama as clr
