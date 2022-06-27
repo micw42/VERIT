@@ -49,33 +49,28 @@ def clean_edges():
 
     #Convert the color col into hex color strings
     def convert_col(color_val, palette):
-        if float(color_val)<.1:
+        if float(color_val) < -0.8:
             return palette[0]
-        elif float(color_val)<.2:
+        elif float(color_val)< -0.6:
             return palette[1]
-        elif float(color_val)<.3:
+        elif float(color_val)< -0.4:
             return palette[2]
-        elif float(color_val)<.4:
+        elif float(color_val)< -0.2:
             return palette[3]
-        elif float(color_val)<.5:
+        elif float(color_val)< 0:
             return palette[4]
-        elif float(color_val)<.6:
+        elif float(color_val)< 0.2:
             return palette[5]
-        elif float(color_val)<.7:
+        elif float(color_val)< 0.4:
             return palette[6]
-        elif float(color_val)<.8:
+        elif float(color_val)< 0.6:
             return palette[7]
-        elif float(color_val)<.9:
+        elif float(color_val)< 0.8:
             return palette[8]
         return palette[9]
     
-    blue_pal = list(sns.color_palette("Blues", 10).as_hex())
-    red_pal = list(sns.color_palette("Reds", 10).as_hex())
-    beige_pal = list(sns.color_palette("pink", 10).as_hex())
-    beige_pal.reverse()
-    edges_df["pos_color"]=edges_df["pos_color"].apply(convert_col, args=(blue_pal,))
-    edges_df["neg_color"]=edges_df["neg_color"].apply(convert_col, args=(red_pal,))
-    edges_df["inc_color"]=edges_df["inc_color"].apply(convert_col, args=(beige_pal,))
+    pal = list(sns.color_palette("RdBu", 10).as_hex())
+    edges_df["color"]=edges_df["color"].apply(convert_col, args=(pal,))
     
     def get_display(id1, id2, direct_nodes):
         if id1 in direct_nodes or id2 in direct_nodes:
@@ -143,12 +138,11 @@ def convert(nodes_df, edges_df):
         edges.append(parts)
     
     for edge in edges:
-        edge_id=edge[5]+edge[6]
-        edge_dict={"data":{"id":edge_id, "source":edge[5], "target":edge[6], 
-                           "weight":edge[7], "pos_color":edge[0], 
-                           "neg_color":edge[1], "inc_color":edge[2], 
-                           "ev":edge[4], "display":edge[8], "orig_display":edge[8],
-                          "thickness":edge[3]}}
+        edge_id=edge[3]+edge[4]
+        edge_dict={"data":{"id":edge_id, "source":edge[3], "target":edge[4], 
+                           "weight":edge[5], "color":edge[0],  
+                           "ev":edge[2], "display":edge[6], "orig_display":edge[6],
+                          "thickness":edge[1]}}
         elements.append(edge_dict)
 
     return elements

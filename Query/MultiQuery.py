@@ -69,7 +69,7 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
             
             except nx.NodeNotFound:
                 pass
-            
+    
     st_dict = {"source": sources, "target": targets}
     
     st_df = pd.DataFrame(st_dict).drop_duplicates()
@@ -79,15 +79,8 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
 
     # Bidirectional edges
     opp_df = rel_df.merge(edges_df, left_on=["source", "target"], right_on=["target","source"])
-    opp_df = opp_df.drop(labels=["source_x","target_x","neg_color_x", 
-                                 "pos_color_x", "inc_color_x", "thickness_x"], axis=1).rename(columns={"source_y":"source",
-                                                                         "target_y":"target",
-                                                                         "pos_color_y":"pos_color",
-                                                                                                       "neg_color_y":"neg_color",
-                                                                                                       "inc_color_y":"inc_color",
-                                                                         "thickness_y":"thickness"})
+    opp_df = opp_df.drop(labels=["source_x","target_x","color_x", "thickness_x"], axis=1).rename(columns={"source_y":"source", "target_y":"target", "color_y":"color", "thickness_y":"thickness"})
     rel_df = pd.concat([rel_df, opp_df]).drop_duplicates(subset=["source", "target"])
-    rel_df = rel_df.merge(ev_df, on=["source", "target"], how="left")[["source", "target", "pos_color", "neg_color", "inc_color", "thickness", "evidence"]]
     
     # Create nodes df
     nodes = list(it.chain(*q_combinations)) # List of all query IDs
@@ -125,8 +118,8 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
     nodes = pd.concat([nodes, full_nodes])
 
     # Add direct connection edges to the rest of the edges
-    links = links.merge(ev_df, on=["source", "target"], how="left")[["source", "target", "pos_color", "neg_color", "inc_color", "thickness", "evidence"]]
     rel_df = pd.concat([rel_df, links]).drop_duplicates(subset = ["source", "target"])
+    rel_df = rel_df.merge(ev_df, on=["source", "target"], how="left")[["source", "target", "color", "thickness", "evidence"]]
         
     # Add synonyms to the nodes
     nodes = nodes.merge(db_df, left_on="Id", right_on="id", how="left")
@@ -174,24 +167,21 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
   
     # For edges connecting nodes that correspond to multiple IDs, 
     # take average of all color values (weighted by thickness)
-    rel_df = rel_df[["pos_color", "neg_color", "inc_color", "thickness", "evidence", "source", "target"]]
-    rel_df["pos_color2"] = rel_df["pos_color"] * rel_df["thickness"]
-    rel_df["neg_color2"] = rel_df["neg_color"] * rel_df["thickness"]
-    rel_df["inc_color2"] = rel_df["inc_color"] * rel_df["thickness"]
+    
+    rel_df = rel_df[["color", "thickness", "evidence", "source", "target"]]
+    rel_df["color2"] = rel_df["color"] * rel_df["thickness"]
     ev_concat = lambda x: "%%".join(x) # Concat all evidence of edges connecting multiple-ID nodes
-    aggregation_functions = {'pos_color2': 'sum', 'neg_color2': 'sum', 'inc_color2': 'sum', 'thickness': 'sum', 'evidence': ev_concat}
+    aggregation_functions = {'color2': 'sum','thickness': 'sum', 'evidence': ev_concat}
     rel_df = rel_df.groupby(["source", "target"]).aggregate(aggregation_functions).reset_index()
-    rel_df["pos_color"] = rel_df["pos_color2"]/rel_df["thickness"]
-    rel_df["neg_color"] = rel_df["neg_color2"]/rel_df["thickness"]
-    rel_df["inc_color"] = rel_df["inc_color2"]/rel_df["thickness"]
+    rel_df["color"] = rel_df["color2"]/rel_df["thickness"]
     
     #For consistency: source and target columns disappear if dataframe happens to be empty
     if len(rel_df.index)==0:
-        rel_df = pd.DataFrame(columns=["pos_color", "neg_color", "inc_color",
+        rel_df = pd.DataFrame(columns=["color",
                                        "thickness", "evidence", 
                                        "source", "target"])
         
-    rel_df = rel_df[["pos_color", "neg_color", "inc_color", "thickness", "evidence", 
+    rel_df = rel_df[["color", "thickness", "evidence", 
                      "source", "target"]]
     nodes = nodes[["Id", "Label", "name"]]
     

@@ -14,3 +14,6 @@ Query/.ipynb_checkpoints/*
 .ipynb_checkpoints/*
 static/cytoscape.js-cise/*
 static/cytoscape.js-cise/
+*.ipynb
+abstract_pickles_2/
+Query/MultiQueryTest.py

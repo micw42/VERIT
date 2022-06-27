@@ -56,7 +56,7 @@ def query(G, edges_df, nodes_df, ev_df, query, depth):
         full_df.loc[(full_df.target.isin(query_list)),'target']=user_query
     
     nodes = nodes[["Id", "Label", "depth"]]
-    full_df = full_df[["pos_color", "neg_color", "inc_color", "thickness", "evidence", "source", "target"]]
+    full_df = full_df[["color", "thickness", "evidence", "source", "target"]]
 
     full_df.to_csv("query_edges.csv", index=False)
     nodes.to_csv("query_nodes.csv", index=False)

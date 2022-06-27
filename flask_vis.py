@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, request, redirect
-from Query import DictChecker, SingleQuery, SingleSearcher, MultiSearcher, ConvertSearch, MultiQuery, GeneConvert
+from Query import DictChecker, SingleQuery, SingleSearcher, MultiSearcher, ConvertSearch, MultiQuery, GeneConvert, MultiQueryTest
 from Visualization import to_json, to_json_netx
 import pandas as pd
 import colorama as clr
@@ -19,19 +19,19 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 start = time.time()
 
 print("Reading edges...", end="\x1b[1K\r")
-edges_df=pd.read_pickle("./abstract_pickles/edges.pkl")
+edges_df=pd.read_pickle("./abstract_pickles_2/edges.pkl")
 print("Loaded edges.")
 
 print("Reading nodes...", end="\x1b[1K\r")
-nodes_df=pd.read_pickle("./abstract_pickles/nodes.pkl")
+nodes_df=pd.read_pickle("./abstract_pickles_2/nodes.pkl")
 print("Loaded nodes.")
 
 print("Reading evidence...", end="\x1b[1K\r")
-ev_df=pd.read_pickle("./abstract_pickles/evidence.pkl")
+ev_df=pd.read_pickle("./abstract_pickles_2/evidence.pkl")
 print("Loaded evidence.")
 
 print("Reading databases...", end="\x1b[1K\r")
-full_df=pd.read_pickle("./abstract_pickles/combinedDBs.pkl")
+full_df=pd.read_pickle("./abstract_pickles_2/combinedDBs.pkl")
 print("Loaded databases.")
 
 print(f"{clr.Fore.GREEN}Loaded pickles in {round(time.time() - start, 3)}s.{clr.Style.RESET_ALL}")
@@ -292,7 +292,7 @@ def single_query_result(query, depth, query_type, methods=["GET"]):
     query = json.loads(query)
     depth=int(depth)
 
-    SimpleQuery.query(G, edges_df, nodes_df, ev_df, query, depth)
+    SingleQuery.query(G, edges_df, nodes_df, ev_df, query, depth)
     elements=to_json.clean()
     return render_template("single_query_result.html", elements=elements)
 

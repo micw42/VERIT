@@ -124,8 +124,7 @@
             <h3 style="padding-left:10px">Experimental: Color-code the edges by interaction type</h3>
         <h5 style="padding-left:10px">The NLP algorithm can also detect the type of relationship between two nodes (eg. positive or negative regulation). However, it does not do so perfectly. Use the button below to view different interaction types. Darker edges mean higher confidence. For more information on the color-coding, please see the README.</h5>
         <div style="padding-left:10px">
-        <button id = "color-button" onclick = "switch_color()" class="btn btn-primary" style="background-color:#4CAF50;padding-left:10px">Change Color</button>
-            <p id = "current-color" >Current: None</p>
+        <button id = "color-button" onclick = "add_colors()" class="btn btn-primary" style="background-color:#4CAF50;padding-left:10px">Show Color</button>
         </div>
     </div>
     <script>
@@ -227,19 +226,9 @@
                     style:{ 'opacity': '.1' }
                 },
                     {
-                    selector: 'edge.pos_colors',
-                    style:{ 'line-color':"data(pos_color)",
-                          'target-arrow-color':"data(pos_color)"}
-                },
-                    {
-                    selector: 'edge.neg_colors',
-                    style:{ 'line-color':"data(neg_color)",
-                          'target-arrow-color':"data(neg_color)"}
-                },
-                    {
-                    selector: 'edge.inc_colors',
-                    style:{ 'line-color':"data(inc_color)",
-                          'target-arrow-color':"data(inc_color)"}
+                    selector: 'edge.colors',
+                    style:{ 'line-color':"data(color)",
+                          'target-arrow-color':"data(color)"}
                 }
                 ],
                 layout: {
@@ -428,7 +417,7 @@ layout.run();
         
         
         function add_colors() {
-          var x = document.getElementById("add_color");
+          var x = document.getElementById("color-button");
           if (x.innerHTML === "Show Color") {
             x.innerHTML = "Hide Color";
               cy.edges().addClass("colors");
