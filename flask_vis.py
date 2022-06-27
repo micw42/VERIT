@@ -11,7 +11,7 @@ import os
 from werkzeug.utils import secure_filename
 from os.path import expanduser
 
-UPLOAD_FOLDER = expanduser("~")
+UPLOAD_FOLDER = "uploads/"
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -19,19 +19,19 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 start = time.time()
 
 print("Reading edges...", end="\x1b[1K\r")
-edges_df=pd.read_pickle("./abstract_pickles_2/edges.pkl")
+edges_df=pd.read_pickle("./ski_species_pickles/edges.pkl")
 print("Loaded edges.")
 
 print("Reading nodes...", end="\x1b[1K\r")
-nodes_df=pd.read_pickle("./abstract_pickles_2/nodes.pkl")
+nodes_df=pd.read_pickle("./ski_species_pickles/nodes.pkl")
 print("Loaded nodes.")
 
 print("Reading evidence...", end="\x1b[1K\r")
-ev_df=pd.read_pickle("./abstract_pickles_2/evidence.pkl")
+ev_df=pd.read_pickle("./ski_species_pickles/evidence.pkl")
 print("Loaded evidence.")
 
 print("Reading databases...", end="\x1b[1K\r")
-full_df=pd.read_pickle("./abstract_pickles_2/combinedDBs.pkl")
+full_df=pd.read_pickle("./ski_species_pickles/combinedDBs.pkl")
 print("Loaded databases.")
 
 print(f"{clr.Fore.GREEN}Loaded pickles in {round(time.time() - start, 3)}s.{clr.Style.RESET_ALL}")
@@ -70,10 +70,12 @@ def validate(query_type):
             
             #Handles file input
             if file:
-                filename = secure_filename(file.filename)
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                with open(file_path) as file:
-                    file_contents = file.read()
+                #filename = secure_filename(file.filename)
+                #file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                #file.save(file_path)
+                #with open(file_path) as file:
+                #    file_contents = file.read()
+                file_contents = file.read().decode("utf-8") 
                 query = file_contents.splitlines()
                 string_type=request.form["queryType"]
                 if string_type == "id":
