@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, request, redirect
-from Query import DictChecker, SingleQuery, SingleSearcher, MultiSearcher, ConvertSearch, MultiQuery, GeneConvert, MultiQueryTest
+from Query import DictChecker, SingleQuery, SingleSearcher, MultiSearcher, ConvertSearch, MultiQuery, GeneConvert
 from Visualization import to_json, to_json_netx
 import pandas as pd
 import colorama as clr
@@ -11,6 +11,8 @@ import os
 from werkzeug.utils import secure_filename
 from os.path import expanduser
 
+pickle_path = "./pickles/"
+
 UPLOAD_FOLDER = "uploads/"
 
 app = Flask(__name__)
@@ -19,19 +21,20 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 start = time.time()
 
 print("Reading edges...", end="\x1b[1K\r")
-edges_df=pd.read_pickle("./ski_species_pickles/edges.pkl")
+edges_df=pd.read_pickle(f"{pickle_path}edges.pkl")
 print("Loaded edges.")
 
 print("Reading nodes...", end="\x1b[1K\r")
-nodes_df=pd.read_pickle("./ski_species_pickles/nodes.pkl")
+nodes_df=pd.read_pickle(f"{pickle_path}nodes.pkl")
 print("Loaded nodes.")
 
 print("Reading evidence...", end="\x1b[1K\r")
-ev_df=pd.read_pickle("./ski_species_pickles/evidence.pkl")
+ev_df=pd.read_pickle(f"{pickle_path}evidence.pkl")
 print("Loaded evidence.")
 
 print("Reading databases...", end="\x1b[1K\r")
-full_df=pd.read_pickle("./ski_species_pickles/combinedDBs.pkl")
+full_df=pd.read_pickle(f"{pickle_path}combinedDBs.pkl")
+
 print("Loaded databases.")
 
 print(f"{clr.Fore.GREEN}Loaded pickles in {round(time.time() - start, 3)}s.{clr.Style.RESET_ALL}")
