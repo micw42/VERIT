@@ -131,6 +131,10 @@
     .round {
       border-radius: 50%;
     }
+
+    hr {
+      border-top: 1px solid rgb(160, 160, 160);
+    }
 </style>
     
     
@@ -171,33 +175,29 @@
 
 
 
-    <div id="single" style="padding-bottom:50px;padding-top:20px;height:100%;position:relative">
+    <div id="single" style="padding-bottom:0px;padding-top:20px;height:100%;position:relative">
                 <form method="POST" action="#" style="height:100%;width:100%">
                     <h3>Single Query</h3>
-                    <br>
-                    <p>Takes one ID or entity name as input. Finds all the entities that the input directly targets, as well as the entities that There is the option to drop relationships that do not show up in many papers.</p>
-                    <h4>Takes the following inputs:</h4>
+                    <hr>
+                    <p>Takes one ID or entity name as input and finds all neighbors eminating from it.</p>
+                    <h4>Directions:</h4>
                     <br>
                                 <ol>
-                  <li>One ID or entity name</li>
+                  <li>Enter a single ID or entity name</li>
                                     <br>
-                  <li>Depth: Specifies the number of “layers” to go out from the query node. For example, depth of 1 means that the algorithm will find the entities that the query node directly targets. Depth of 2 means that the algorithm will find the entities that the query node directly targets, and the entities that the nodes in the first layer directly target.</li>
+                  <li>Specify depth: 1 for query's direct neighbors. >1 for recursion (Neighbor's neighbors, etc.).</li>
                                     <br>
-                  <li>Confidence: The query algorithm can drop links between entities that are not supported by enough papers. This number specifies the minimum number of papers that a link must have in order to not be dropped. </li>
-                                    <br>
-                                    
-                            
                 </ol>
                     <h3><input type="submit" class="btn btn-primary" name="query_type" value="Make a single query" style="background-color:#4CAF50"/></h3>
-                    <h4>Single Query Example - Senescence (MeSH ID: D000375)</h4>
-                    <h5>Zoom in by scrolling, mouseover nodes to see immediate outgoing connections</h5>
+                    <br>
+                    <h4>Interactive Single Query Example - Senescence (mesh:D000375)</h4>
                     <div style="height:100%;width:100%">
                         <div id="cy"></div>
                     </div>
                         <script>
             var cy = cytoscape({
                     container: document.getElementById('cy'),
-                wheelSensitivity: 0.4,
+                wheelSensitivity: 0.2,
                     elements: [{'data': {'id': 'uniprot:O14896',
        'label': 'LPS',
        'color': '#c9ddf2',
@@ -1081,22 +1081,29 @@
 
                 </form>
             </div>
-            <div id="dijkstra" style="margin-top:550px;position:relative" class="container">
+            <div id="dijkstra" style="margin-top:300px;position:relative" class="container">
                 <form method="POST" action="#">
                     <h3>Multi Query</h3>
-                    <br>
+                    <hr>
                     <p>Takes a comma-separated list of IDs or entity names as input. Finds all possible pair combinations within this list. Finds either all of the simple paths between each pair that are shorter than a user-specified value, or all of the shortest paths between each pair.</p>
-                    <h4>Takes the following inputs:</h4>
+                    <h4>Directions:</h4>
                     <br>
                     <ol>
-      <li>A comma-separated list of IDs or entity names.</li>
+      <li>Enter comma-separated list of IDs or entity names.</li>
                         <br>
-      <li>The maximum number of edges between a pair of entities.</li>
+      <li>Enter maximum number of edges between any pair of entities (<3 recommended).</li>
                         <br>
+      <li>Select network type:
+          <ul>
+            <li>All simple paths</li>
+            <li>All shortest paths</li>
+          </ul>
+      </li>
+      <br>
     </ol>
                     <p><input type="submit" class="btn btn-primary" name="query_type" value="Make a Multi Query" style="background-color:#4CAF50;"/></p>
-                    <h4>Multi Query Example - RB-E2F Pathway</h4>
-                    <h5>Zoom in by scrolling, mouseover nodes to see immediate outgoing connections</h5>
+                    <br>
+                    <h4>Interactive Multi Query Example - RB-E2F Pathway</h4>
                         <div id="cy2"></div>
         <script>
             const data =   [{'data': {'id': 'uniprot:P06400', 'label': 'RB_HUMAN', "classes":"level3"}},
@@ -1196,7 +1203,7 @@
    'ev': 'The co-activation of c-Myc and cyclin E can regulate cell cycle , potentiate hyperplasia of atypically proliferated endometrium , and elevate estrogen receptor level in endometrium as well as the c-Myc transcription , eventually leading to gene amplification and over-proliferation of endometrial cell proliferation and EC occurrence [ 21 ] . (PMC6069412)|Activation (Positive)|'}}];
             var cy2 = cytoscape({
                     container: document.getElementById('cy2'),
-                wheelSensitivity: 0.4,
+                wheelSensitivity: 0.2,
                     elements:data,
                         style: [
                             {
