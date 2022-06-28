@@ -12,11 +12,11 @@
     
 <style>
     th, td {
-      padding: 20px;
+      padding: 15px;
         font-size:14px;
     }
     table, th, td {
-      border: 1px solid black;
+      border: thin solid grey;
       border-collapse: collapse;
     }
     table {
@@ -129,6 +129,25 @@
     .round {
       border-radius: 50%;
     }
+
+    hr {
+      border-top: 1px solid rgb(160, 160, 160);
+    }
+
+    table tbody tr {
+    border-bottom: 1px solid #dddddd;
+    }
+
+    table tbody tr:nth-of-type(even) {
+        background-color: #f3f3f3;
+    }
+
+    table thead tr th{
+      background-color:#4CAF50;
+      line-height:20px;
+      text-align:left;
+      color:white;
+    }
 </style>
     
 <body>
@@ -146,12 +165,13 @@
           <li class="nav-item active">
             <a class="nav-link" href="{{ url_for('select_query')}}">Query</a>
           </li>
-         <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('readme')}}">README</a>
+          <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('readme')}}">README</a>
           </li>
         </ul>
       </div>
     </nav>
+
     <div style="padding-top:65px;" class="container">
         <ul id="progressbar">
             <li class="active" id="step1">
@@ -170,11 +190,12 @@
         </script>
 
     <h1>{% block type %}{% endblock %}</h1>
-    <h3>{% block instructions %}{% endblock %}</h3>
+    <hr>
+    <h5>{% block instructions %}{% endblock %}</h5>
     
   <form method="POST" action="#" method="post" enctype="multipart/form-data">
       <ul class="nav">
-          <select name="queryType" id="cars" style="width:230px;height:30px;font-size:25px">
+          <select name="queryType" id="cars" style="width:180px;height:30px;font-size:20px">
                 <option value="starts_with">Name starts with</option>
               <option value="ends_with">Name ends with</option>
               <option value="contains">Name contains</option>
@@ -186,81 +207,85 @@
           </li>
       </ul>
   <br>
+  <p><input type="submit" class="btn btn-primary" value="Submit" style="background-color:#4CAF50"/></p> <br>
+  </form>
 
-    <p><input type="submit" class="btn btn-primary" value="Submit" style="background-color:#4CAF50"/></p>
-    </form>
+  <h6>If querying using ID, refer to the table below for formatting:</h6>
 
-    <h5 style="color:#4CAF50">If your query is an ID, it is important to note that the query algorithms only take IDs of the format DATABASE_ABBREVIATION:ID. For example, urea is in the ChEBI database, and has the ID 16199, so its correctly formatted ID is CHEBI:16199.</h5>
-    <h6>ID Query Reference Table:</h6>
-    <table style="width:100%">
-          <tr style="background-color:#4CAF50;line-height:20px;">
-            <th style="text-align:left;color:white">Database</th>
-            <th style="text-align:left;color:white">Database Abbreviation</th> 
-            <th style="text-align:left;color:white">Use when querying for</th>
-            <th style="text-align:left;color:white">Example queries from this database</th>
-          </tr>
+  <table style="width:100%">
+      <thead>
+        <tr>
+          <th>Database</th>
+          <th>Symbol</th> 
+          <th>Description</th>
+          <th>Example</th>
+        </tr>
+      </thead>
 
-          <tr >
-              <td><a href="https://www.ebi.ac.uk/chebi/init.do" target="_blank">ChEBI</a></td>
+      <tbody>
+        <tr>
+            <td><a href="https://www.ebi.ac.uk/chebi/init.do" target="_blank">ChEBI</a></td>
             <td>CHEBI</td>
-              <td>Inorganic and organic chemicals</td>
-              <td>urea (CHEBI:16199), caffeine (CHEBI:27732), glucose (CHEBI:17234)</td>
-                    </tr>
-                    <tr style="padding-bottom:10px">
-                        <td><a href="http://geneontology.org/" target="_blank">Gene Ontology</a></td>
+            <td>Inorganic and organic chemicals</td>
+            <td>urea (CHEBI:16199), caffeine (CHEBI:27732), glucose (CHEBI:17234)</td>
+        </tr>
+
+        <tr>
+          <td><a href="https://www.uniprot.org/" target="_blank">UniProt</a></td>
+          <td>uniprot</td>
+          <td>Proteins and protein complexes. Important: Most proteins and protein complexes in the database are under UniProt IDs. When querying for proteins, please try UniProt IDs before any other protein database.</td>
+          <td>TLR4 (uniprot:O00206), insulin (uniprot:P01308), fetal bovine serum (uniprot:Q9HAH7)</td> 
+        </tr>
+
+        <tr>
+            <td><a href="http://geneontology.org/" target="_blank">Gene Ontology</a></td>
             <td>GO</td>
-                        <td>Cellular events</td>
-                        <td>apoptosis (GO:0006915), cellular quiescence (GO:0044838), insulin secretion (GO:0030073)</td>
+            <td>Cellular events</td>
+            <td>apoptosis (GO:0006915), cellular quiescence (GO:0044838), insulin secretion (GO:0030073)</td>
+        </tr>
 
-                    </tr>
-                    <tr >
-                       <td><a href="https://proconsortium.org/" target="_blank">Protein Ontology</a></td>    
-            <td>PR</td>
-                        <td>Proteins. Important: Most proteins in the database are under Uniprot IDs. When querying for proteins, please try the Uniprot ID before Protein Ontology.</td>
-                        <td>angiotensin I (PR:000036008), angiotensin II (PR:000036009), E Protein (PR:000036822)</td>
+        <tr>
+          <td><a href="https://proconsortium.org/" target="_blank">Protein Ontology</a></td>    
+          <td>PR</td>
+          <td>Proteins. Important: Most proteins in the database are under Uniprot IDs. When querying for proteins, please try the Uniprot ID before Protein Ontology.</td>
+          <td>angiotensin I (PR:000036008), angiotensin II (PR:000036009), E Protein (PR:000036822)</td>
+        </tr>
 
-                    </tr>
-                    <tr>
-                        <td><a href="https://github.com/clulab/reach/blob/master/bioresources/src/main/resources/org/clulab/reach/kb/famplex.tsv" target="_blank">FamPlex</a></td>
-                        <td>fplx</td>
-                        <td>Protein complexes. Important: for the ID, please use the abbreviations found in the 9_1_1 column of the csv file in the link (in the leftmost column) when querying for species from FamPlex.</td>
-                        <td>mTORC1 (fplx:mTORC1), AMPK (fplx:AMPK), Map kinase (fplx:MAPK)</td>
+        <tr>
+          <td><a href="https://github.com/clulab/reach/blob/master/bioresources/src/main/resources/org/clulab/reach/kb/famplex.tsv" target="_blank">FamPlex</a></td>
+          <td>fplx</td>
+          <td>Protein complexes. Important: for the ID, please use the abbreviations found in the 9_1_1 column of the csv file in the link (in the leftmost column) when querying for species from FamPlex.</td>
+          <td>mTORC1 (fplx:mTORC1), AMPK (fplx:AMPK), Map kinase (fplx:MAPK)</td>
+        </tr>
 
-                    </tr>
-                    <tr>
-                        <td><a href="https://www.ebi.ac.uk/interpro/" target="_blank">Interpro</a></td>
-                         <td>interpro</td>
-                        <td>Proteins and protein constituents. Important: Most proteins in the database are under Uniprot IDs. When querying for proteins, please try the Uniprot ID before Interpro.</td>
-                        <td>heme (interpro:IPR006361), thrombin (interpro:IPR003966), retinoblastoma protein (interpro:IPR028309)</td>
+        <tr>
+          <td><a href="https://www.ebi.ac.uk/interpro/" target="_blank">Interpro</a></td>
+          <td>interpro</td>
+          <td>Proteins and protein constituents. Important: Most proteins in the database are under Uniprot IDs. When querying for proteins, please try the Uniprot ID before Interpro.</td>
+          <td>heme (interpro:IPR006361), thrombin (interpro:IPR003966), retinoblastoma protein (interpro:IPR028309)</td>
+        </tr>
 
-                    </tr>
-                    <tr>
-                         <td><a href="https://www.ncbi.nlm.nih.gov/mesh/" target="_blank">Medical Subject Headings</a></td>
-                         <td>mesh</td>
-                        <td>Diseases and conditions</td>
-             <td>arthritis (mesh:D001168), COVID-19 (mesh:C000657245), insulin resistance (mesh:D007333)</td>
-                    </tr>
-                    <tr>
-                        <td><a href="http://pfam.xfam.org/" target="_blank">Protein Family (Pfam)</a></td>
-              <td>pfam</td>
-                        <td>Proteins. Important: Most proteins in the database are under Uniprot IDs. When querying for proteins, please try the Uniprot ID before Pfam.</td>
-                        <td>collagen (pfam:PF01391), peroxidase (pfam:PF00141), interleukin 4 (pfam:PF00727)</td>
-                    </tr>
-                    <tr>
-                        <td><a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem</a></td>
-                        <td>pubchem</td>
-                        <td>Inorganic and organic chemicals. Important: more chemicals appear under ChEBI IDs than PubChem ones. When querying for chemicals, please try ChEBI IDs before PubChem.</td>
-                       <td>calcium (pubchem:271), ATP (pubchem:5957), nitric oxide (pubchem:24822)</td> 
+        <tr>
+          <td><a href="https://www.ncbi.nlm.nih.gov/mesh/" target="_blank">Medical Subject Headings</a></td>
+          <td>mesh</td>
+          <td>Diseases and conditions</td>
+          <td>arthritis (mesh:D001168), COVID-19 (mesh:C000657245), insulin resistance (mesh:D007333)</td>
+        </tr>
 
-                    </tr>
-                    <tr>
-                        <td><a href="https://www.uniprot.org/" target="_blank">UniProt</a></td>
-                        <td>uniprot</td>
-                        <td>Proteins and protein complexes. Important: Most proteins and protein complexes in the database are under UniProt IDs. When querying for proteins, please try UniProt IDs before any other protein database.</td>
-                        <td>TLR4 (uniprot:O00206), insulin (uniprot:P01308), fetal bovine serum (uniprot:Q9HAH7)</td> 
+        <tr>
+          <td><a href="http://pfam.xfam.org/" target="_blank">Protein Family (Pfam)</a></td>
+          <td>pfam</td>
+          <td>Proteins. Important: Most proteins in the database are under Uniprot IDs. When querying for proteins, please try the Uniprot ID before Pfam.</td>
+          <td>collagen (pfam:PF01391), peroxidase (pfam:PF00141), interleukin 4 (pfam:PF00727)</td>
+        </tr>
 
-          </tr>
-
+        <tr>
+          <td><a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem</a></td>
+          <td>pubchem</td>
+          <td>Inorganic and organic chemicals. Important: more chemicals appear under ChEBI IDs than PubChem ones. When querying for chemicals, please try ChEBI IDs before PubChem.</td>
+          <td>calcium (pubchem:271), ATP (pubchem:5957), nitric oxide (pubchem:24822)</td> 
+        </tr>
+      </tbody>
     </table>
     </div>
     
