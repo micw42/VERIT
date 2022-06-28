@@ -56,7 +56,7 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
         elif qtype == "all_shortest_paths":
             try:
                 path = list(nx.all_shortest_paths(G, source, target))
-                
+                path = [x for x in path if (len(x)-1)<=max_linkers]
                 for ind in path:
                     for n1, n2 in zip(ind, ind[1:]):
                         sources.append(n1)
@@ -194,6 +194,9 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
         nodes["Type"] = ["Query" if x in query_list else ("Linker" if x in found_ids else "Direct") for x in nodes['Id']]
         
     nodes["Label"] = nodes["Label"].str.replace("SPACE", " ")
+    
+    # Remove recursive edges
+    rel_df = rel_df[rel_df["source"] != rel_df["target"]]
 
     # Write edges and nodes
     nodes.to_csv("query_nodes.csv", index=False)
