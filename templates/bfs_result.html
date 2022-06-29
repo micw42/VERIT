@@ -128,10 +128,10 @@
 
 
 <body>
+    <div id="floatParent">
+    <div id="cy"></div>
 
-    <div class="w3-sidebar w3-bar-block w3-border-right" style="display:none;width:25%" id="mySidebar">
-
-        <button onclick="w3_close()" class="w3-bar-item w3-large">Close &times;</button>
+    <div class="w3-sidebar w3-bar-block w3-border-right" style="width:15%;float:left;" id="mySidebar">
 
         <form id="queryForm" method="POST" action="{{ url_for('go_home') }}">
             <h6><input class="w3-bar-item w3-button" style="color:#4CAF50" type="submit" value="Return to Homepage" />
@@ -167,6 +167,7 @@
             <button id="color-button" onclick="add_colors()" class="btn btn-primary"
                 style="background-color:#4CAF50;padding-left:10px">Show Color</button>
         </div>
+    </div>
     </div>
 
     <script>
@@ -213,7 +214,7 @@
         </div>
     </div>
 
-    <div id="cy"></div>
+    
 
     <script>
         const data = {{ elements | tojson }};
@@ -296,32 +297,114 @@
                     }
                 }
 
-            ],
-            layout: {
-                name: 'fcose',
-                fixedNodeConstraint: sqAlign,
-                packComponents: false
-            }
+            ]
         });
+        
+        function run_circle() {      
+            var layout = cy.layout({
+                     name: 'breadthfirst',
+                     grid:true,
+                     roots:'node[classes @*="level3"]',
+                     maximal:true,
+                     circle:true,
+                    spacingFactor:4
+
+                });
+            layout.run(); 
+            var box = cy.elements().boundingBox();
+            var orphs = cy.elements().filter(function(ele) {return((ele.degree()==0));});
+            orphs.nodes().filter('[classes = "level3"]').positions(function( node, i ){
+              return {
+                x: box.x2+100+500*(i%4),
+                y: box.y1+500*(Math.floor(i/10))
+              };
+            });
+            cy.zoom(0.08);
+            cy.center();
+        }
+        
+       function run_fcose() {
+            var layout = cy.layout({
+                name: 'fcose',
+                fixedNodeConstraint: origAlignQ,
+                packComponents: false,
+                nodeRepulsion: 50000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,
+                nodeSeparation: 5000,
+                relativePlacementConstraint: origAlignL
+            });
+
+            layout.run();
+            var orphs = cy.elements().filter(function(ele) {return((ele.degree()==0));});
+            orphs.nodes().filter('[classes = "level3"]').positions(function( node, i ){
+              return {
+                x: box.x2+100+500*(i%4),
+                y: box.y1+500*(Math.floor(i/10))
+              };
+            });
+            cy.zoom(0.03);
+        }
+
+        function run_grid() {      
+            var is_query = cy.nodes().filter('[type="Query"]');
+            var is_connected = is_query.filter(function(ele) {return((ele.degree()!=0));});  //Connected query nodes
+            var query_orphans = is_query.filter(function(ele) {return((ele.degree()==0));}); // Non-connected query nodes
+            var linkers = cy.nodes().filter('[type="Linker"]').not(':transparent');
+            var direct = cy.nodes().filter('[type="Direct"]').not(':transparent');
+            var edgeLen = Math.floor(Math.sqrt(linkers.length));
+            var orphLen = Math.floor(Math.sqrt(query_orphans.length));
+            
+            if (linkers.length == 0) {
+                is_connected.positions(function( node, i ){
+                  return {
+                    x: 1000*(i%2),
+                    y: 1000*Math.floor(i/2)
+                  };
+                });
+            } else {
+                is_connected.positions(function( node, i ){
+                  return {
+                    x: (edgeLen*500+5000)*(i%2),
+                    y: 1000*Math.floor(i/2)
+                  };
+                });                
+                linkers.positions(function( node, i ){
+                  return {
+                    x: 2500+(i%edgeLen)*500,
+                    y: 500*Math.floor(i/edgeLen)
+                  };
+                });
+            }
+            
+            query_orphans.positions(function( node, i ){
+                return {
+                    x: -500-500*(i%orphLen),
+                    y: -500-500*(Math.floor(i/orphLen))
+                  };
+                });
+            
+            cy.zoom(0.08);
+            cy.center();
+
+        }
+        
+        run_grid();
+
 
         cy.on('mouseover', 'node', function (evt) {
             var sel = evt.target;
             console.log(sel.degree());
             sel.addClass('large');
-            cy.nodes().difference(sel.outgoers()).not(sel).addClass('semitransp');
-            cy.edges().difference(sel.edgesTo(sel.outgoers())).addClass("semitransp");
-        });
-
-        cy.on('mouseover', 'node', function (evt) {
-            var sel = evt.target;
-            console.log(sel.position());
+            var neighbors = sel.outgoers().union(sel.incomers());
+            cy.nodes().difference(neighbors).not(sel).addClass('semitransp');
+            cy.edges().difference(sel.edgesWith(neighbors)).addClass("semitransp");
         });
 
         cy.on('mouseout', 'node', function (evt) {
             var sel = evt.target;
             sel.removeClass('large');
-            cy.nodes().difference(sel.outgoers()).not(sel).removeClass('semitransp');
-            cy.edges().difference(sel.edgesTo(sel.outgoers())).removeClass("semitransp");
+            var neighbors = sel.outgoers().union(sel.incomers());
+            cy.nodes().difference(neighbors).not(sel).removeClass('semitransp');
+            cy.edges().difference(sel.edgesWith(neighbors)).removeClass("semitransp");
         });
 
         cy.on('click', 'edge', function (evt) {
@@ -477,7 +560,6 @@
         output.innerHTML = slider.value;
         var filteredEdges = cy.edges().filter('[thickness < 0]');
         var filteredNodes = cy.nodes().filter(function (ele) {
-
             return ele.degree() == -2;
         });
         filteredEdges = cy.remove(filteredEdges);
@@ -496,44 +578,13 @@
             });
             filteredNodes.addClass("transp");
             var nodes = cy.filter('node');
+            var currentLayout = document.getElementById("layout-name");
+            if (currentLayout.innerHTML=="Current Layout: Circle") {
+                run_circle();
+            } else if (currentLayout.innerHTML=="Current Layout: Square force-based") {
+                run_grid();
+            }
 
-        }
-
-        function run_fcose() {
-            var layout = cy.layout({
-                name: 'fcose',
-                fixedNodeConstraint: sqAlign,
-                packComponents: false
-            });
-
-            layout.run();
-        }
-
-        function run_circle() {
-            var layout = cy.layout({
-                name: 'breadthfirst',
-                grid: true,
-                roots: 'node[classes @*="level3"]',
-                maximal: true,
-                circle: true,
-                spacingFactor: 4
-
-            });
-
-            layout.run();
-        }
-
-        function run_fcose_orig() {
-            var layout = cy.layout({
-                name: 'fcose',
-                fixedNodeConstraint: origAlignQ,
-                packComponents: false,
-                nodeRepulsion: 50000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,
-                nodeSeparation: 5000,
-                relativePlacementConstraint: origAlignL
-            });
-
-            layout.run();
         }
 
         function switch_layout() {
@@ -542,10 +593,10 @@
                 run_circle();
                 layout.innerHTML = "Current Layout: Circle";
             } else if (layout.innerHTML === "Current Layout: Circle") {
-                run_fcose_orig();
+                run_fcose();
                 layout.innerHTML = "Current Layout: Fcose";
             } else {
-                run_fcose();
+                run_grid();
                 layout.innerHTML = "Current Layout: Square force-based";
             }
         }
