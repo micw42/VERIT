@@ -4,6 +4,7 @@ import math
 import itertools as it
 import numpy as np
 import copy
+import time
 
 # queries_id: dict of format {query_name:[list of selected IDs]} (if name query)
 # or {"QUERY_ID":"comma separated string of query IDs"} (if ID query)
@@ -13,6 +14,7 @@ import copy
 #qtype: all_simple_paths or all_shortest_paths
 
 def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_type, get_direct_linkers, db_df):
+    start = time.time()
     nodes_df = nodes_df.drop_duplicates(subset='Id', keep="first")
     edges_df = edges_df.drop_duplicates(subset=['source', 'target'], keep="first")
     
@@ -32,7 +34,10 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
     elif query_type == "id":
         query_list = queries_id["QUERY_ID"].split(",")
         q_combinations = list(it.permutations(query_list, 2))
+    
+    print(f"Checkpoint 1: {time.time() - start} sec")
 
+    start = time.time()
     sources = list()
     targets = list()
     for query_pair in q_combinations:
@@ -69,6 +74,10 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
             
             except nx.NodeNotFound:
                 pass
+            
+    print(f"Querying: {time.time() - start} sec")
+    
+    start = time.time()
     
     st_dict = {"source": sources, "target": targets}
     
@@ -94,33 +103,40 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
     # IDs that were found (not in original query list)
     found_ids = set(rel_df["source"].tolist()) | set(rel_df["target"].tolist()) - set(query_list)
     
-    # Get all direct connections to query nodes that were not already found by query 
-    # (user has option to show them in the visualization)
-    links = edges_df[((edges_df["source"].isin(query_list)) & ~(edges_df["target"].isin(found_ids))) | 
-                     ((edges_df["target"].isin(query_list)) & ~(edges_df["source"].isin(found_ids)))]
-    
-    # Filter thickness of direct connections so visualization isn't crowded (arbitrarily selected threshold)
-    links = links[links["thickness"] > 20]  
+    if get_direct_linkers:
+        # Get all direct connections to query nodes that were not already found by query 
+        # (user has option to show them in the visualization)
+        links = edges_df[((edges_df["source"].isin(query_list)) & ~(edges_df["target"].isin(found_ids))) | 
+                         ((edges_df["target"].isin(query_list)) & ~(edges_df["source"].isin(found_ids)))]
 
-    # Nodes directly targeted by query nodes
-    targets = links[(links["source"].isin(query_list)) & ~(links["target"].isin(query_list))]
-    targets = targets[["target"]]
-    # Nodes that directly target query nodes
-    sources = links[(links["target"].isin(query_list)) & ~(links["source"].isin(query_list))]
-    sources = sources[["source"]]
-    targets = targets.rename(columns = {"target":"Id"})
-    sources = sources.rename(columns = {"source":"Id"})
-    full_nodes = pd.concat([targets, sources]).drop_duplicates(subset = ["Id"])
-    full_nodes = full_nodes.merge(nodes_df, on = "Id", how = "inner")
-    full_nodes = full_nodes[["Id", "Label"]]
-    
-    # Add direct connection nodes to the rest of the nodes
-    nodes = pd.concat([nodes, full_nodes])
+        # Filter thickness of direct connections so visualization isn't crowded (arbitrarily selected threshold)
+        links = links[links["thickness"] > 20]  
 
-    # Add direct connection edges to the rest of the edges
-    rel_df = pd.concat([rel_df, links]).drop_duplicates(subset = ["source", "target"])
-    rel_df = rel_df.merge(ev_df, on=["source", "target"], how="left")[["source", "target", "color", "thickness", "evidence"]]
+        # Nodes directly targeted by query nodes
+        targets = links[(links["source"].isin(query_list)) & ~(links["target"].isin(query_list))]
+        targets = targets[["target"]]
+        # Nodes that directly target query nodes
+        sources = links[(links["target"].isin(query_list)) & ~(links["source"].isin(query_list))]
+        sources = sources[["source"]]
+        targets = targets.rename(columns = {"target":"Id"})
+        sources = sources.rename(columns = {"source":"Id"})
+        full_nodes = pd.concat([targets, sources]).drop_duplicates(subset = ["Id"])
+        full_nodes = full_nodes.merge(nodes_df, on = "Id", how = "inner")
+        full_nodes = full_nodes[["Id", "Label"]]
+
+        # Add direct connection nodes to the rest of the nodes
+        nodes = pd.concat([nodes, full_nodes])
+
+        # Add direct connection edges to the rest of the edges
+        rel_df = pd.concat([rel_df, links]).drop_duplicates(subset = ["source", "target"])
         
+    print(f"Checkpoint 3: {time.time() - start} sec")
+    
+    start = time.time()
+    rel_df = rel_df.merge(ev_df, on=["source", "target"], how="left")[["source", "target", "color", "thickness", "evidence"]]
+    print(f"Evidence merge: {time.time() - start} sec")
+        
+    start = time.time()
     # Add synonyms to the nodes
     nodes = nodes.merge(db_df, left_on="Id", right_on="id", how="left")
     nodes["name"] = nodes["name"].fillna(nodes["Label"])
@@ -128,7 +144,9 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
     syn_concat = lambda x: "%%".join(x)  # Separate each synonym with %%
     aggregation_functions = {'Id': 'first', 'Label':"first", "name":syn_concat}
     nodes = nodes.groupby('id').aggregate(aggregation_functions)
+    print(f"Checkpoint 4: {time.time() - start} sec")
     
+    start = time.time()
     # Fix the node labels to account for combined IDs (can ignore)
     if query_type == "name":
         # Make df with user queries and corresponding IDs
@@ -159,7 +177,10 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
         rename_dict = {"Id2":"Id", 
                       "Label2":"Label"}
         nodes = nodes.rename(columns= rename_dict)
-        
+    
+    print(f"Checkpoint 5: {time.time() - start} sec")
+    
+    start = time.time()
     # Combine synonyms again for nodes that were just fixed
     syn_concat = lambda x: "%%".join(x)
     aggregation_functions = {"Label":"first", 'name': syn_concat}
@@ -197,6 +218,8 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
     
     # Remove recursive edges
     rel_df = rel_df[rel_df["source"] != rel_df["target"]]
+    
+    print(f"Checkpoint 6: {time.time() - start} sec")
 
     # Write edges and nodes
     nodes.to_csv("query_nodes.csv", index=False)

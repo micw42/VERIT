@@ -15,6 +15,8 @@ pickle_path = "./pickles/"
 
 UPLOAD_FOLDER = "uploads/"
 
+get_direct_linkers = True
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -133,11 +135,19 @@ def validate(query_type):
                     return redirect(url_for("make_single_query", query=query, query_type=query_type))
                 query=request.form["query"]
                 if string_type=="gene":
-                    conv_dict = GeneConvert.convert_genes([query])
-                    query = conv_dict[query]
-                    query = {"QUERY_ID":query}
-                    query = json.dumps(query)
-                    return redirect(url_for("make_single_query", query=query, query_type=query_type))
+                    results = GeneConvert.convert_genes([query])
+                    if results:
+                        conv_id = f"uniprot:{results['results'][0]['to']['primaryAccession']}"
+                        result_dict=DictChecker.check(edges_df, [conv_id])
+                        result_dict = json.dumps(result_dict)
+                        query_dict = {"QUERY_ID":conv_id}
+                        query_dict = json.dumps(query_dict)
+                    else:
+                        result_dict = {"present":[], "not_in":[query]}
+                        result_dict = json.dumps(result_dict)
+                        query_dict = {"QUERY_ID":"None"}
+                        query_dict = json.dumps(query_dict)
+                    return redirect(url_for("display_options", result_dict=result_dict, query_type=query_type, query=query_dict))
                 #Remove spaces from query entries
                 
             query=query.replace(" ","SPACE")
@@ -165,21 +175,28 @@ def pick_query(query_type, query, string_type):
         
     else:
             #Handles gene ids    
-            if string_type == "gene":
-                id_dict = GeneConvert.convert_genes(user_query)
-                conv_genes = list(id_dict.keys())    #the genes that were able to be converted to uniprot id
-                conv_ids = list(id_dict.values())   #converted uniprot ids
-                not_in = list(set(user_query) - set(conv_genes))
-                no_id=DictChecker.check(edges_df, conv_ids)   #The uniprot ids not found in the network
-                no_id_gene = [conv_genes[i] for i in range(len(conv_ids)) if conv_ids[i] in no_id["not_in"]]   #genes w/ uniprot id not in network
-                not_in.extend(no_id_gene)
-                present = list(set(conv_genes) - set(no_id_gene)) #genes w/ uniprot id present in network
-                result_dict = {"not_in":not_in, "present":present}
-                result_dict=json.dumps(result_dict)
-                query=",".join(conv_ids)    #new query consists just of uniprot ids found in network
-                query_dict = {"QUERY_ID":query}
-                query_dict = json.dumps(query_dict)
-                return redirect(url_for("display_options", result_dict = result_dict, query_type=query_type, query=query_dict))
+            if string_type == "gene":  
+                user_query = [x.upper() for x in user_query]
+                results = GeneConvert.convert_genes(user_query)
+                if results:
+                    conv_genes = [x["from"] for x in results["results"]]    #the genes that were able to be converted to uniprot id
+                    conv_ids = [f"uniprot:{x['to']['primaryAccession']}" for x in results["results"]]  #converted uniprot ids
+                    not_in = list(set(user_query) - set(conv_genes))  # Genes that were not able to be converted to uniprot id
+                    no_id=DictChecker.check(edges_df, conv_ids)   #The uniprot ids not found in the network
+                    no_id_gene = [conv_genes[i] for i in range(len(conv_ids)) if conv_ids[i] in no_id["not_in"]] #genes w/ uniprot id not in network
+                    not_in.extend(no_id_gene)
+                    present = list(set(conv_genes) - set(no_id_gene)) #genes w/ uniprot id present in network
+                    result_dict = {"not_in":not_in, "present":present}
+                    result_dict=json.dumps(result_dict)
+                    query=",".join(conv_ids)    #new query consists just of uniprot ids found in network
+                    query_dict = {"QUERY_ID":query}
+                    query_dict = json.dumps(query_dict)
+                    return redirect(url_for("display_options", result_dict = result_dict, query_type=query_type, query=query_dict))
+                else:
+                    result_dict = {"not_in":user_query, "present":[]}
+                    query_dict = {"QUERY_ID":"None"}
+                    query_dict = json.dumps(query_dict)
+                    return redirect(url_for("display_options", result_dict = result_dict, query_type=query_type, query=query_dict))
             
             #Handles name queries
             else:  
@@ -272,10 +289,6 @@ def bfs_query_result(query_string, max_linkers, qtype, query_type, get_direct_li
 
     query=json.loads(query_string)
     max_linkers=int(max_linkers)
-    if get_direct_linkers == "True":
-        get_direct_linkers = True
-    else:
-        get_direct_linkers = False
     MultiQuery.query(G, edges_df, nodes_df, ev_df, query, max_linkers, qtype, query_type, get_direct_linkers = get_direct_linkers, db_df = full_df)
     no_path_file=open("no_path.txt","r")
     no_path=[line.rstrip("\n") for line in no_path_file]

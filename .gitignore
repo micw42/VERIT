@@ -23,3 +23,6 @@ uploads/
 .DS_Store
 s3test.py
 test_files/
+pickles/
+Query/defs.py
+Query/GetEv.py
