@@ -42,6 +42,7 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
     targets = list()
     for query_pair in q_combinations:
         source, target = query_pair
+        print("Running", query_pair)
         if qtype == "all_simple_paths":
             try:
                 path = list(nx.all_simple_paths(G, source, target, cutoff=max_linkers))
@@ -63,6 +64,7 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
                 path = list(nx.all_shortest_paths(G, source, target))
                 path = [x for x in path if (len(x)-1)<=max_linkers]
                 for ind in path:
+                    print("Running path", ind)
                     for n1, n2 in zip(ind, ind[1:]):
                         sources.append(n1)
                         targets.append(n2)
@@ -74,6 +76,7 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
             
             except nx.NodeNotFound:
                 pass
+        print("Done with qcombination", query_pair)
             
     print(f"Querying: {time.time() - start} sec")
     

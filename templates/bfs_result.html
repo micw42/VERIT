@@ -300,7 +300,7 @@
             ]
         });
         
-        function run_circle() {      
+        function run_circle() { 
             var layout = cy.layout({
                      name: 'breadthfirst',
                      grid:true,
@@ -319,6 +319,28 @@
                 y: box.y1+500*(Math.floor(i/10))
               };
             });
+            var is_query = cy.nodes().filter('[type="Query"]');
+            var is_connected = is_query.filter(function(ele) {return((ele.degree()!=0));}); 
+            var direct = cy.nodes().filter('[type="Direct"]').not(':transparent');
+            for (var i=0; i<is_connected.length; i++) {
+                    ele = is_connected[i];
+                    var box = ele.position();
+                    var direct_conn = ele.outgoers().union(ele.incomers()).filter('[type="Direct"]').not(':transparent');
+                    direct_conn.positions(function( node, i ){
+                        if (box.x>0) {
+                          return {
+                            x: box.x+3000+500*(i%4),
+                            y: box.y+500*(Math.floor(i/10))
+                          };
+                        } else {
+                           return {
+                            x: box.x-3000-500*(i%4),
+                            y: box.y-500*(Math.floor(i/10))
+                          }; 
+                        }
+
+                    }); 
+                }
             cy.zoom(0.08);
             cy.center();
         }
@@ -360,6 +382,26 @@
                     y: 1000*Math.floor(i/2)
                   };
                 });
+                for (var i=0; i<is_connected.length; i++) {
+                    ele = is_connected[i];
+                    var box = ele.position();
+                    var direct_conn = ele.outgoers().union(ele.incomers()).filter('[type="Direct"]').not(':transparent');
+                    direct_conn.positions(function( node, i ){
+                        if (box.x==1000) {
+                          return {
+                            x: box.x+3000+500*(i%4),
+                            y: box.y+500*(Math.floor(i/10))
+                          };
+                        } else {
+                           return {
+                            x: box.x-3000-500*(i%4),
+                            y: box.y-500*(Math.floor(i/10))
+                          }; 
+                        }
+
+                    }); 
+                }
+                
             } else {
                 is_connected.positions(function( node, i ){
                   return {
@@ -373,6 +415,26 @@
                     y: 500*Math.floor(i/edgeLen)
                   };
                 });
+                for (var i=0; i<is_connected.length; i++) {
+                    ele = is_connected[i];
+                    var box = ele.position();
+                    var direct_conn = ele.outgoers().union(ele.incomers()).filter('[type="Direct"]').not(':transparent');
+                    direct_conn.positions(function( node, i ){
+                        if (box.x==edgeLen*500+5000) {
+                          return {
+                            x: box.x+edgeLen*100+1000+500*(i%4),
+                            y: box.y+500*(Math.floor(i/10))
+                          };
+                        } else {
+                           return {
+                            x: box.x-edgeLen*100-1000-500*(i%4),
+                            y: box.y-500*(Math.floor(i/10))
+                          }; 
+                        }
+
+                    }); 
+                }
+
             }
             
             query_orphans.positions(function( node, i ){
@@ -592,9 +654,6 @@
             if (layout.innerHTML === "Current Layout: Square force-based") {
                 run_circle();
                 layout.innerHTML = "Current Layout: Circle";
-            } else if (layout.innerHTML === "Current Layout: Circle") {
-                run_fcose();
-                layout.innerHTML = "Current Layout: Fcose";
             } else {
                 run_grid();
                 layout.innerHTML = "Current Layout: Square force-based";
