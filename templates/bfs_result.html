@@ -469,8 +469,9 @@
             cy.edges().difference(sel.edgesWith(neighbors)).removeClass("semitransp");
         });
 
-        cy.on('click', 'edge', function (evt) {
+        cy.on('click', 'edge', function (evt) {      
             var sel = evt.target;
+            console.log(sel.data().thickness);
             var modal = document.getElementById("myModal");
             var span = document.getElementsByClassName("close")[0];
             var thickness = document.getElementById("thickness");

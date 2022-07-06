@@ -31,7 +31,7 @@ nodes_df=pd.read_pickle(f"{pickle_path}nodes.pkl")
 print("Loaded nodes.")
 
 print("Reading evidence...", end="\x1b[1K\r")
-ev_df=pd.read_pickle(f"{pickle_path}evidence.pkl")
+ev_df=pd.read_pickle(f"{pickle_path}evidence_only.pkl")
 print("Loaded evidence.")
 
 print("Reading databases...", end="\x1b[1K\r")

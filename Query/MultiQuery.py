@@ -91,9 +91,8 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
 
     # Bidirectional edges
     opp_df = rel_df.merge(edges_df, left_on=["source", "target"], right_on=["target","source"])
-    opp_df = opp_df.drop(labels=["source_x","target_x","color_x", "thickness_x"], axis=1).rename(columns={"source_y":"source", "target_y":"target", "color_y":"color", "thickness_y":"thickness"})
+    opp_df = opp_df.drop(labels=["source_x","target_x","color_x", "thickness_x", "index1_x"], axis=1).rename(columns={"source_y":"source", "target_y":"target", "color_y":"color", "thickness_y":"thickness", "index1_y":"index1"})
     rel_df = pd.concat([rel_df, opp_df]).drop_duplicates(subset=["source", "target"])
-    
     # Create nodes df
     nodes = list(it.chain(*q_combinations)) # List of all query IDs
     # Add found nodes
@@ -132,11 +131,11 @@ def query(G, edges_df, nodes_df, ev_df, queries_id, max_linkers, qtype, query_ty
 
         # Add direct connection edges to the rest of the edges
         rel_df = pd.concat([rel_df, links]).drop_duplicates(subset = ["source", "target"])
-        
     print(f"Checkpoint 3: {time.time() - start} sec")
     
     start = time.time()
-    rel_df = rel_df.merge(ev_df, on=["source", "target"], how="left")[["source", "target", "color", "thickness", "evidence"]]
+    rel_df["evidence"] = ev_df.iloc[rel_df["index1"]].tolist()
+    rel_df = rel_df[["source", "target", "color", "thickness", "evidence"]]
     print(f"Evidence merge: {time.time() - start} sec")
         
     start = time.time()

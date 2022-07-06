@@ -1,8 +1,0 @@
-{% extends "validate.html" %}
-{% block type %}Multi Query{% endblock %}
-{% block instructions %}Please enter your queries in a comma-separated list, and indicate whether you are using names (ex. urea,caffeine,cellular quiescence) or IDs (ex. CHEBI:16199,CHEBI:27732,GO:0044838).{% endblock %}
-{% block field %}<input type="text" name="query" style="width:1000px;height:30px;font-size:28px"/>
-<h2>File upload: Upload a newlines-separated file with your queries</h2>
-<input type = "file" name = "file" />
-<input type="checkbox" name="default_PR"/>Default to IDs with highest PageRank values (recommended for large queries)
-{% endblock %}
